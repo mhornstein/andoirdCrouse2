@@ -41,18 +41,14 @@ public class DownloaderTaskFragment extends Fragment {
 		setRetainInstance(true);
 
 		// TODO: Create new DownloaderTask that "downloads" data
+		AsyncTask<Integer[], Integer, String[]> downloaderTask = new DownloaderTask();
 
-		
 		// TODO: Retrieve arguments from DownloaderTaskFragment
-		// Prepare them for use with DownloaderTask.
+		// Prepare them for use with DownloaderTask. 
+		Integer[] feedIds = MainActivity.sRawTextFeedIds.toArray(new Integer[MainActivity.sRawTextFeedIds.size()]);
 
-
-		
-		
-		
-		// TODO: Start the DownloaderTask
-
-		
+		// TODO: Start the DownloaderTask 
+		downloaderTask.execute(feedIds);
 	}
 
 	// Assign current hosting Activity to mCallback
@@ -85,22 +81,24 @@ public class DownloaderTaskFragment extends Fragment {
 	// out). Ultimately, it must also pass newly available data back to
 	// the hosting Activity using the DownloadFinishedListener interface.
 
-	// public class DownloaderTask extends ...
+	public class DownloaderTask extends AsyncTask<Integer[], Integer, String[]> {
+
+		@Override
+		protected String[] doInBackground(Integer[]... params) {
+			String[] tweets = downloadTweets(params[0]);
+			return tweets;
+		}
+
+		@Override
+		protected void onPostExecute(String[] result) {
+			if(isAdded()) {
+				mCallback.notifyDataRefreshed(result);
+			}
+		}
 
 
-	
-	
-	
-	
-	
-	
-		// TODO: Uncomment this helper method
-		// Simulates downloading Twitter data from the network
+		private String[] downloadTweets(Integer resourceIDS[]) {
 
-/* 
-	 
-	  private String[] downloadTweets(Integer resourceIDS[]) {
-	 
 			final int simulatedDelay = 2000;
 			String[] feeds = new String[resourceIDS.length];
 			boolean downLoadCompleted = false;
@@ -147,13 +145,6 @@ public class DownloaderTaskFragment extends Fragment {
 			return feeds;
 
 		}
-*/
-		// Uncomment this helper method.
-		// If necessary, notifies the user that the tweet downloads are
-		// complete. Sends an ordered broadcast back to the BroadcastReceiver in
-		// MainActivity to determine whether the notification is necessary.
-
-	/*
 		private void notify(final boolean success) {
 
 			final Intent restartMainActivityIntent = new Intent(mContext,
@@ -173,82 +164,68 @@ public class DownloaderTaskFragment extends Fragment {
 					MainActivity.DATA_REFRESHED_ACTION), null,
 					new BroadcastReceiver() {
 
-						final String failMsg = mContext
-								.getString(R.string.download_failed_string);
-						final String successMsg = mContext
-								.getString(R.string.download_succes_string);
-						final String notificationSentMsg = mContext
-								.getString(R.string.notification_sent_string);
+				final String failMsg = mContext
+						.getString(R.string.download_failed_string);
+				final String successMsg = mContext
+						.getString(R.string.download_succes_string);
+				final String notificationSentMsg = mContext
+						.getString(R.string.notification_sent_string);
 
-						@Override
-						public void onReceive(Context context, Intent intent) {
+				@Override
+				public void onReceive(Context context, Intent intent) {
 
-							// TODO: Check whether or not the MainActivity
-							// received the broadcast
+					int resultCode = getResultCode();
 
-							if (true || false) {
+					if (resultCode != MainActivity.IS_ALIVE) {
 
-								// TODO: If not, create a PendingIntent using
-								// the
-								// restartMainActivityIntent and set its flags
-								// to FLAG_UPDATE_CURRENT
+						// TODO: If not, create a PendingIntent using
+						// the
+						// restartMainActivityIntent and set its flags
+						// to FLAG_UPDATE_CURRENT
 
+						// Uses R.layout.custom_notification for the
+						// layout of the notification View. The xml
+						// file is in res/layout/custom_notification.xml
 
+						RemoteViews mContentView = new RemoteViews(
+								mContext.getPackageName(),
+								R.layout.custom_notification);
 
-
-
-
-
-
-								// Uses R.layout.custom_notification for the
-								// layout of the notification View. The xml
-								// file is in res/layout/custom_notification.xml
-
-								RemoteViews mContentView = new RemoteViews(
-										mContext.getPackageName(),
-										R.layout.custom_notification);
-
-								// TODO: Set the notification View's text to
-								// reflect whether the download completed
-								// successfully
+						// TODO: Set the notification View's text to
+						// reflect whether the download completed
+						// successfully
 
 
 
 
-								// TODO: Use the Notification.Builder class to
-								// create the Notification. You will have to set
-								// several pieces of information. You can use
-								// android.R.drawable.stat_sys_warning
-								// for the small icon. You should also
-								// setAutoCancel(true).
+						// TODO: Use the Notification.Builder class to
+						// create the Notification. You will have to set
+						// several pieces of information. You can use
+						// android.R.drawable.stat_sys_warning
+						// for the small icon. You should also
+						// setAutoCancel(true).
 
-								Notification.Builder notificationBuilder = null;
+						Notification.Builder notificationBuilder = null;
 
-								// TODO: Send the notification
+						// TODO: Send the notification
 
 
 
 
 
 
-								Toast.makeText(mContext, notificationSentMsg,
+						Toast.makeText(mContext, notificationSentMsg,
+								Toast.LENGTH_LONG).show();
+
+					} else {
+						Toast.makeText(mContext,
+								success ? successMsg : failMsg,
 										Toast.LENGTH_LONG).show();
-
-							} else {
-								Toast.makeText(mContext,
-										success ? successMsg : failMsg,
-										Toast.LENGTH_LONG).show();
-							}
-						}
-					}, null, 0, null, null);
+					}
+				}
+			}, null, 0, null, null);
 		}
 
-*/
-	
-		// Uncomment this helper method
-		// Saves the tweets to a file
-	
-/*	
 		private void saveTweetsToFile(String[] result) {
 			PrintWriter writer = null;
 			try {
@@ -268,17 +245,5 @@ public class DownloaderTaskFragment extends Fragment {
 				}
 			}
 		}
-*/
-
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	}
 }
